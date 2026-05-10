@@ -46,6 +46,7 @@ obsidian-personal-publisher/
 Install dependencies:
 
 ```bash
+corepack enable
 pnpm install
 ```
 
@@ -90,6 +91,20 @@ DEFAULT_FOOTER_TEXT=Published by XIAOWANG - 18624433439
 ```
 
 Do not expose the Supabase service role key to the Obsidian plugin or browser code.
+
+## Vercel Deployment
+
+The project pins pnpm with `packageManager: pnpm@9.15.9` and pins the runtime to Node.js `20.x`.
+
+In Vercel, add this project environment variable if dependency installation fails or Vercel does not use the pinned pnpm version:
+
+```text
+ENABLE_EXPERIMENTAL_COREPACK=1
+```
+
+This tells Vercel to use Corepack and the `packageManager` value from `package.json` during dependency installation.
+
+If the Vercel project root is set to `apps/web`, keep the `packageManager` and `engines` fields in `apps/web/package.json`; Vercel may read that package file as the deployment root.
 
 ## Current Status
 

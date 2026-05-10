@@ -2,7 +2,10 @@
   "name": "obsidian-personal-publisher",
   "version": "0.0.0",
   "private": true,
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm --filter @opp/web dev",
