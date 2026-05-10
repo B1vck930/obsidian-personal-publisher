@@ -1,0 +1,19 @@
+{
+  "name": "@opp/obsidian-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "obsidian": "^1.7.2"
+  },
+  "devDependencies": {
+    "builtin-modules": "^5.0.0",
+    "esbuild": "^0.24.0"
+  }
+}
