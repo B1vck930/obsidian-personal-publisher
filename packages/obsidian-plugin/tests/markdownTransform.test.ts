@@ -133,6 +133,13 @@ describe("transformMarkdownAssets", () => {
     ]);
   });
 
+  it("does not require an asset availability checker", () => {
+    const result = transformMarkdownAssets("![[image.png]]", {});
+
+    expect(result.assetPaths).toEqual(["image.png"]);
+    expect(result.warnings).toEqual([]);
+  });
+
   it("returns warnings for unsupported local image references", () => {
     const result = transformMarkdownAssets("![[document.pdf]]");
 

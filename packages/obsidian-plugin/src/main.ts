@@ -52,9 +52,14 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
     try {
       const markdown = await this.app.vault.read(file);
       const title = extractTitle(markdown, file.basename);
-      const assetPreview = transformMarkdownAssets(markdown, {
-        isAssetAvailable: this.createAssetAvailabilityChecker()
-      });
+      const assetOptions: MarkdownAssetTransformOptions = {};
+      const isAssetAvailable = this.createAssetAvailabilityChecker();
+
+      if (isAssetAvailable) {
+        assetOptions.isAssetAvailable = isAssetAvailable;
+      }
+
+      const assetPreview = transformMarkdownAssets(markdown, assetOptions);
 
       new Notice(formatPublishPreviewNotice(title, assetPreview));
     } catch (error) {
