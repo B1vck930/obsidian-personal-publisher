@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { EnvError } from "../../../lib/env";
 import {
   createPage,
   PageApiError,
@@ -22,6 +23,10 @@ export async function POST(request: Request) {
 function toErrorResponse(error: unknown) {
   if (error instanceof PageApiError) {
     return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+
+  if (error instanceof EnvError) {
+    return NextResponse.json({ error: error.message }, { status: 503 });
   }
 
   const message = error instanceof Error ? error.message : "Unexpected error.";

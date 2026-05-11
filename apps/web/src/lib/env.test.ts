@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getPublicConfig, getWebEnv } from "./env";
+import { getPublicConfig, getServerSupabaseEnv, getWebEnv } from "./env";
 
 describe("web env", () => {
   it("reads footer config from one place", () => {
@@ -21,5 +21,17 @@ describe("web env", () => {
         CLEANUP_SECRET: "secret"
       })
     ).toThrow(/must not include/);
+  });
+
+  it("only requires Supabase URL and service role for server database access", () => {
+    expect(
+      getServerSupabaseEnv({
+        SUPABASE_URL: "https://example.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "service"
+      })
+    ).toEqual({
+      supabaseUrl: "https://example.supabase.co",
+      supabaseServiceRoleKey: "service"
+    });
   });
 });

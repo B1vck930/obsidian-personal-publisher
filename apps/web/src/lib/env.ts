@@ -14,7 +14,12 @@ export type WebEnv = {
   defaultFooterText: string;
 };
 
-const requiredEnvKeys = [
+export type ServerSupabaseEnv = Pick<
+  WebEnv,
+  "supabaseUrl" | "supabaseServiceRoleKey"
+>;
+
+const requiredWebEnvKeys = [
   "NEXT_PUBLIC_SITE_URL",
   "SUPABASE_URL",
   "SUPABASE_ANON_KEY",
@@ -23,7 +28,14 @@ const requiredEnvKeys = [
   "CLEANUP_SECRET"
 ] as const;
 
-type RequiredEnvKey = (typeof requiredEnvKeys)[number];
+const requiredServerSupabaseEnvKeys = [
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY"
+] as const;
+
+type RequiredEnvKey =
+  | (typeof requiredWebEnvKeys)[number]
+  | (typeof requiredServerSupabaseEnvKeys)[number];
 
 export class EnvError extends Error {
   constructor(message: string) {
@@ -33,7 +45,7 @@ export class EnvError extends Error {
 }
 
 export function getWebEnv(source: EnvSource = process.env): WebEnv {
-  const missing = requiredEnvKeys.filter((key) => !source[key]);
+  const missing = requiredWebEnvKeys.filter((key) => !source[key]);
 
   if (missing.length > 0) {
     throw new EnvError(`Missing required environment variables: ${missing.join(", ")}`);
@@ -61,6 +73,27 @@ export function getWebEnv(source: EnvSource = process.env): WebEnv {
     defaultExpirationDays: expirationDays,
     defaultFooterText:
       source.DEFAULT_FOOTER_TEXT?.trim() || defaultPublicPageConfig.footerText
+  };
+}
+
+export function getServerSupabaseEnv(
+  source: EnvSource = process.env
+): ServerSupabaseEnv {
+  const missing = requiredServerSupabaseEnvKeys.filter((key) => !source[key]);
+
+  if (missing.length > 0) {
+    throw new EnvError(`Missing required environment variables: ${missing.join(", ")}`);
+  }
+
+  const supabaseUrl = getRequired(source, "SUPABASE_URL");
+
+  if (supabaseUrl.includes("/rest/v1")) {
+    throw new EnvError("SUPABASE_URL must be the project URL and must not include /rest/v1.");
+  }
+
+  return {
+    supabaseUrl,
+    supabaseServiceRoleKey: getRequired(source, "SUPABASE_SERVICE_ROLE_KEY")
   };
 }
 
