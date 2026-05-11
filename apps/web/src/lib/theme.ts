@@ -5,3 +5,9 @@ export const defaultPublicPageConfig = {
 } as const;
 
 export type PublicPageTheme = "minimal" | "notion" | "obsidian" | "vercel";
+
+const publicPageThemes = new Set<string>(["minimal", "notion", "obsidian", "vercel"]);
+
+export function isPublicPageTheme(value: unknown): value is PublicPageTheme {
+  return typeof value === "string" && publicPageThemes.has(value);
+}

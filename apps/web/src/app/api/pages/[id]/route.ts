@@ -1,15 +1,58 @@
 import { NextResponse } from "next/server";
+import {
+  deletePage,
+  PageApiError,
+  parseDeletePageBody,
+  parseUpdatePageBody,
+  updatePage
+} from "../../../../lib/pages";
+import { createSupabasePageRepository } from "../../../../lib/supabase/pageRepository";
 
-export function PUT() {
-  return NextResponse.json(
-    { error: "Page updates are not implemented yet." },
-    { status: 501 }
-  );
+export const dynamic = "force-dynamic";
+
+type PageRouteContext = {
+  params: {
+    id: string;
+  };
+};
+
+export async function PUT(request: Request, context: PageRouteContext) {
+  try {
+    const input = parseUpdatePageBody(await request.json());
+    const result = await updatePage(
+      createSupabasePageRepository(),
+      context.params.id,
+      input.ownerToken,
+      input.page
+    );
+
+    return NextResponse.json(result);
+  } catch (error) {
+    return toErrorResponse(error);
+  }
 }
 
-export function DELETE() {
-  return NextResponse.json(
-    { error: "Page deletion is not implemented yet." },
-    { status: 501 }
-  );
+export async function DELETE(request: Request, context: PageRouteContext) {
+  try {
+    const input = parseDeletePageBody(await request.json());
+    await deletePage(
+      createSupabasePageRepository(),
+      context.params.id,
+      input.ownerToken
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return toErrorResponse(error);
+  }
+}
+
+function toErrorResponse(error: unknown) {
+  if (error instanceof PageApiError) {
+    return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+
+  const message = error instanceof Error ? error.message : "Unexpected error.";
+
+  return NextResponse.json({ error: message }, { status: 500 });
 }

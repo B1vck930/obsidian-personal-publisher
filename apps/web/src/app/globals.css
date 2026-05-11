@@ -21,3 +21,161 @@ body {
   margin: 0 auto;
   padding: 64px 0;
 }
+
+.public-page {
+  min-height: 100vh;
+  background: #fbfaf8;
+}
+
+.public-page-document {
+  width: min(100% - 32px, 760px);
+  margin: 0 auto;
+  padding: 72px 0 40px;
+}
+
+.public-page-title {
+  margin: 0 0 32px;
+  color: #1f1f1f;
+  font-size: 44px;
+  line-height: 1.12;
+  font-weight: 700;
+}
+
+.public-page-content {
+  color: #2b2b2b;
+  font-size: 17px;
+  line-height: 1.72;
+}
+
+.public-page-content h1,
+.public-page-content h2,
+.public-page-content h3,
+.public-page-content h4,
+.public-page-content h5,
+.public-page-content h6 {
+  margin: 32px 0 12px;
+  color: #222222;
+  line-height: 1.25;
+}
+
+.public-page-content h1 {
+  font-size: 34px;
+}
+
+.public-page-content h2 {
+  font-size: 28px;
+}
+
+.public-page-content h3 {
+  font-size: 22px;
+}
+
+.public-page-content p,
+.public-page-content ul,
+.public-page-content ol,
+.public-page-content pre,
+.public-page-content .table-wrap,
+.public-page-content .callout {
+  margin: 0 0 18px;
+}
+
+.public-page-content a {
+  color: #2563eb;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.public-page-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 20px 0;
+  border-radius: 8px;
+}
+
+.public-page-content .table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.public-page-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.public-page-content th,
+.public-page-content td {
+  border: 1px solid #dfddd8;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.public-page-content th {
+  background: #f1efea;
+  font-weight: 650;
+}
+
+.public-page-content pre {
+  overflow-x: auto;
+  border: 1px solid #dfddd8;
+  border-radius: 8px;
+  background: #f3f1ed;
+  padding: 16px;
+  line-height: 1.55;
+}
+
+.public-page-content code {
+  border-radius: 5px;
+  background: #edeae4;
+  padding: 2px 5px;
+  font-size: 0.92em;
+}
+
+.public-page-content pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.public-page-content .callout {
+  border: 1px solid #dfddd8;
+  border-radius: 8px;
+  background: #f4f2ed;
+  padding: 14px 16px;
+}
+
+.public-page-content .callout-title {
+  margin-bottom: 6px;
+  font-weight: 650;
+}
+
+.public-page-content .task-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.public-page-content .task-list input {
+  margin-right: 8px;
+}
+
+.public-page-footer {
+  display: grid;
+  gap: 6px;
+  margin-top: 56px;
+  border-top: 1px solid #dfddd8;
+  padding-top: 18px;
+  color: #6b665f;
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .public-page-document {
+    width: min(100% - 24px, 760px);
+    padding-top: 40px;
+  }
+
+  .public-page-title {
+    font-size: 34px;
+  }
+}
