@@ -3,6 +3,8 @@ import { getAvailablePublicPage } from "../../../lib/pages";
 import { createSupabasePageRepository } from "../../../lib/supabase/pageRepository";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 type PublicPageProps = {
   params: {

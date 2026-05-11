@@ -10,6 +10,13 @@ export function createServerSupabaseClient() {
     auth: {
       persistSession: false,
       autoRefreshToken: false
+    },
+    global: {
+      fetch: (input, init) =>
+        fetch(input, {
+          ...init,
+          cache: "no-store"
+        })
     }
   });
 }
