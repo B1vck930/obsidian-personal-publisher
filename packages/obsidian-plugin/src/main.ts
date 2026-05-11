@@ -4,7 +4,12 @@ import {
   normalizeSettings,
   PersonalPublisherSettingTab
 } from "./settings";
-import { extractTitle } from "./markdownTransform";
+import {
+  type MarkdownAssetTransformOptions,
+  extractTitle,
+  formatPublishPreviewNotice,
+  transformMarkdownAssets
+} from "./markdownTransform";
 import type { PersonalPublisherSettings } from "./types";
 
 export default class ObsidianPersonalPublisherPlugin extends Plugin {
@@ -47,10 +52,11 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
     try {
       const markdown = await this.app.vault.read(file);
       const title = extractTitle(markdown, file.basename);
+      const assetPreview = transformMarkdownAssets(markdown, {
+        isAssetAvailable: this.createAssetAvailabilityChecker()
+      });
 
-      new Notice(
-        `Publish preview ready for "${title}". Backend publishing is not implemented yet.`
-      );
+      new Notice(formatPublishPreviewNotice(title, assetPreview));
     } catch (error) {
       console.error(error);
       new Notice(`Could not read "${file.path}". Check the note and try again.`);
@@ -85,6 +91,10 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
     }
 
     return file;
+  }
+
+  createAssetAvailabilityChecker(): MarkdownAssetTransformOptions["isAssetAvailable"] {
+    return (path) => Boolean(this.app.metadataCache.getFirstLinkpathDest(path, ""));
   }
 
   async loadSettings() {

@@ -21,6 +21,21 @@ export type MarkdownAssetTransformResult = {
   warnings: AssetWarning[];
 };
 
+export function formatPublishPreviewNotice(
+  title: string,
+  assetPreview: Pick<MarkdownAssetTransformResult, "assetPaths" | "warnings">
+): string {
+  const firstWarning = assetPreview.warnings[0]?.message;
+
+  return [
+    `Publish preview ready for "${title}".`,
+    `Local assets detected: ${assetPreview.assetPaths.length}.`,
+    `Warnings: ${assetPreview.warnings.length}.`,
+    ...(firstWarning ? [firstWarning] : []),
+    "Backend publishing is not implemented yet."
+  ].join("\n");
+}
+
 export function extractTitle(markdown: string, fallbackTitle: string): string {
   const heading = markdown
     .split(/\r?\n/)
