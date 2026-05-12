@@ -1,7 +1,7 @@
 # Project Status
 
 ## Current Task
-Task 6 - Connect plugin publish, update, and unpublish is complete and manually verified. Ready to start Task 7.
+Task 7 - Expiration cleanup implemented locally. Normal PowerShell verification, push, Vercel deployment, and manual cleanup endpoint test are pending.
 
 ## Completed
 - Task 1 - Project foundation and Vercel baseline.
@@ -10,16 +10,16 @@ Task 6 - Connect plugin publish, update, and unpublish is complete and manually 
 - Task 4 - Backend database schema, page APIs, token handling, Markdown rendering, expiration logic, and public page rendering.
 - Task 5 - Asset upload API, Supabase Storage asset records, plugin-side local image reading, upload, Markdown URL replacement, and warning handling.
 - Task 6 - Plugin publish/create, update same URL, unpublish/delete, local metadata storage, URL copy, and page API CORS support.
+- Task 7 - Cleanup endpoint, protected cleanup secret check, expired page deletion, linked asset row deletion, Supabase Storage object deletion, temp asset URL matching, and daily Vercel Cron config.
 
 ## Latest Verification
-- pnpm typecheck: pass
-- pnpm --filter @opp/web build: pass
-- pnpm test: blocked in Codex sandbox by Windows ACL/esbuild directory access
-- pnpm --filter @opp/obsidian-plugin build: blocked in Codex sandbox by Windows ACL/esbuild directory access
-- Vercel production page API smoke test: pass
-- Vercel page API CORS preflight for Obsidian origin: pass
-- Manual Obsidian publish/update/unpublish test: pass
+- pnpm --filter @opp/web test: blocked in Codex sandbox by Windows ACL/esbuild dependency access
+- pnpm --filter @opp/web typecheck: blocked after dependency reinstall hit Windows EPERM in node_modules
+- pnpm --filter @opp/web build: blocked after dependency reinstall hit Windows EPERM in node_modules
+- apps/web/vercel.json daily Cron config: confirmed
+- Vercel deployment: pending Task 7 push
+- Manual cleanup endpoint test: required after deployment
 
 ## Blockers
-- No active Task 6 product blockers.
-- Codex sandbox still cannot run Vitest or Obsidian plugin esbuild in this workspace because esbuild attempts to read a parent directory that Windows ACL denies. Normal local PowerShell manual verification passed.
+- Codex sandbox cannot repair or verify node_modules because Windows ACL/EPERM blocks @supabase/supabase-js during install and build.
+- User must run dependency install and web verification once in normal PowerShell, then push the local Task 7 commit.

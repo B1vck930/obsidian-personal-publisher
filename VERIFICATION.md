@@ -65,3 +65,61 @@ OPTIONS /api/pages/:id for PUT: 204 with Obsidian CORS headers
 OPTIONS /api/pages/:id for DELETE: 204 with Obsidian CORS headers
 Manual Obsidian publish/update/unpublish test: pass
 ```
+
+## Task 7 Commands
+
+Run from repository root:
+
+```powershell
+pnpm --filter @opp/web test
+pnpm --filter @opp/web typecheck
+pnpm --filter @opp/web build
+```
+
+Latest Codex result:
+
+```text
+pnpm --filter @opp/web test: blocked by Codex sandbox / Windows ACL esbuild dependency access
+pnpm --filter @opp/web typecheck: blocked after node_modules reinstall hit Windows EPERM
+pnpm --filter @opp/web build: blocked after node_modules reinstall hit Windows EPERM
+```
+
+Blocking errors:
+
+```text
+Cannot read directory "../../../../..": Access is denied.
+Module not found: Can't resolve '@supabase/supabase-js'
+EPERM, Permission denied: node_modules\.pnpm\@supabase+supabase-js@2.105.4
+```
+
+## Task 7 Coverage Added
+
+Automated test file added:
+
+```text
+apps/web/src/lib/cleanup.test.ts
+```
+
+Covered behavior:
+
+```text
+Cleanup secret is required.
+Expired pages are selected by the repository.
+No deletion runs when no expired pages exist.
+Related asset rows are selected by page_id.
+Temp assets referenced by Supabase public Storage URLs are selected by storage_path.
+Storage object deletion is called before database row deletion.
+Cleanup summary returns deleted page and asset counts.
+```
+
+## Task 7 Production Verification Pending
+
+After Task 7 push and Vercel deployment:
+
+```text
+1. Open /api/cleanup-expired without secret and confirm 401.
+2. Open /api/cleanup-expired?secret=<CLEANUP_SECRET> and confirm success JSON.
+3. Create a short-lived test page.
+4. Trigger cleanup after it expires.
+5. Confirm the public page URL returns 404.
+```

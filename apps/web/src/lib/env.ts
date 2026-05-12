@@ -24,6 +24,8 @@ export type AssetStorageEnv = Pick<
   "supabaseUrl" | "supabaseServiceRoleKey" | "supabaseStorageBucket"
 >;
 
+export type CleanupEnv = Pick<WebEnv, "cleanupSecret">;
+
 const requiredWebEnvKeys = [
   "NEXT_PUBLIC_SITE_URL",
   "SUPABASE_URL",
@@ -44,10 +46,13 @@ const requiredAssetStorageEnvKeys = [
   "SUPABASE_STORAGE_BUCKET"
 ] as const;
 
+const requiredCleanupEnvKeys = ["CLEANUP_SECRET"] as const;
+
 type RequiredEnvKey =
   | (typeof requiredWebEnvKeys)[number]
   | (typeof requiredServerSupabaseEnvKeys)[number]
-  | (typeof requiredAssetStorageEnvKeys)[number];
+  | (typeof requiredAssetStorageEnvKeys)[number]
+  | (typeof requiredCleanupEnvKeys)[number];
 
 export class EnvError extends Error {
   constructor(message: string) {
@@ -128,6 +133,18 @@ export function getAssetStorageEnv(
     supabaseUrl,
     supabaseServiceRoleKey: getRequired(source, "SUPABASE_SERVICE_ROLE_KEY"),
     supabaseStorageBucket: getRequired(source, "SUPABASE_STORAGE_BUCKET")
+  };
+}
+
+export function getCleanupEnv(source: EnvSource = process.env): CleanupEnv {
+  const missing = requiredCleanupEnvKeys.filter((key) => !source[key]);
+
+  if (missing.length > 0) {
+    throw new EnvError(`Missing required environment variables: ${missing.join(", ")}`);
+  }
+
+  return {
+    cleanupSecret: getRequired(source, "CLEANUP_SECRET")
   };
 }
 
