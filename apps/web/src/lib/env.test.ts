@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getPublicConfig, getServerSupabaseEnv, getWebEnv } from "./env";
+import {
+  getAssetStorageEnv,
+  getPublicConfig,
+  getServerSupabaseEnv,
+  getWebEnv
+} from "./env";
 
 describe("web env", () => {
   it("reads footer config from one place", () => {
@@ -32,6 +37,20 @@ describe("web env", () => {
     ).toEqual({
       supabaseUrl: "https://example.supabase.co",
       supabaseServiceRoleKey: "service"
+    });
+  });
+
+  it("only requires Supabase storage variables for asset uploads", () => {
+    expect(
+      getAssetStorageEnv({
+        SUPABASE_URL: "https://example.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "service",
+        SUPABASE_STORAGE_BUCKET: "note-assets"
+      })
+    ).toEqual({
+      supabaseUrl: "https://example.supabase.co",
+      supabaseServiceRoleKey: "service",
+      supabaseStorageBucket: "note-assets"
     });
   });
 });

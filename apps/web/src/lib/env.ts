@@ -19,6 +19,11 @@ export type ServerSupabaseEnv = Pick<
   "supabaseUrl" | "supabaseServiceRoleKey"
 >;
 
+export type AssetStorageEnv = Pick<
+  WebEnv,
+  "supabaseUrl" | "supabaseServiceRoleKey" | "supabaseStorageBucket"
+>;
+
 const requiredWebEnvKeys = [
   "NEXT_PUBLIC_SITE_URL",
   "SUPABASE_URL",
@@ -33,9 +38,16 @@ const requiredServerSupabaseEnvKeys = [
   "SUPABASE_SERVICE_ROLE_KEY"
 ] as const;
 
+const requiredAssetStorageEnvKeys = [
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "SUPABASE_STORAGE_BUCKET"
+] as const;
+
 type RequiredEnvKey =
   | (typeof requiredWebEnvKeys)[number]
-  | (typeof requiredServerSupabaseEnvKeys)[number];
+  | (typeof requiredServerSupabaseEnvKeys)[number]
+  | (typeof requiredAssetStorageEnvKeys)[number];
 
 export class EnvError extends Error {
   constructor(message: string) {
@@ -94,6 +106,28 @@ export function getServerSupabaseEnv(
   return {
     supabaseUrl,
     supabaseServiceRoleKey: getRequired(source, "SUPABASE_SERVICE_ROLE_KEY")
+  };
+}
+
+export function getAssetStorageEnv(
+  source: EnvSource = process.env
+): AssetStorageEnv {
+  const missing = requiredAssetStorageEnvKeys.filter((key) => !source[key]);
+
+  if (missing.length > 0) {
+    throw new EnvError(`Missing required environment variables: ${missing.join(", ")}`);
+  }
+
+  const supabaseUrl = getRequired(source, "SUPABASE_URL");
+
+  if (supabaseUrl.includes("/rest/v1")) {
+    throw new EnvError("SUPABASE_URL must be the project URL and must not include /rest/v1.");
+  }
+
+  return {
+    supabaseUrl,
+    supabaseServiceRoleKey: getRequired(source, "SUPABASE_SERVICE_ROLE_KEY"),
+    supabaseStorageBucket: getRequired(source, "SUPABASE_STORAGE_BUCKET")
   };
 }
 

@@ -1,11 +1,11 @@
 import "server-only";
 import type { AssetUploadRepository } from "../assetUpload";
-import { getWebEnv } from "../env";
+import { getAssetStorageEnv } from "../env";
 import { createServerSupabaseClient } from "./server";
 
 export function createSupabaseAssetRepository(): AssetUploadRepository {
   const supabase = createServerSupabaseClient();
-  const env = getWebEnv();
+  const env = getAssetStorageEnv();
 
   return {
     async uploadObject({ storagePath, file, contentType }) {

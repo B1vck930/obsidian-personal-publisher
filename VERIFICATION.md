@@ -15,7 +15,7 @@ Latest local result:
 
 ```text
 pnpm typecheck: pass
-pnpm test: pass, 12 test files / 51 tests
+pnpm test: pass, 12 test files / 52 tests
 pnpm --filter @opp/web build: pass
 pnpm --filter @opp/obsidian-plugin build: pass
 ```
