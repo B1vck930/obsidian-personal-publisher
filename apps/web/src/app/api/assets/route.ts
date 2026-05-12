@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { AssetUploadError, uploadAsset } from "../../../lib/assetUpload";
+import { corsOptionsResponse, withCors } from "../../../lib/cors";
 import { EnvError } from "../../../lib/env";
 import { createSupabaseAssetRepository } from "../../../lib/supabase/assetRepository";
 
 export const dynamic = "force-dynamic";
+
+const corsMethods = "POST, OPTIONS";
+
+export function OPTIONS(request: Request) {
+  return corsOptionsResponse(request, corsMethods);
+}
 
 export async function POST(request: Request) {
   try {
@@ -22,9 +29,9 @@ export async function POST(request: Request) {
       ...(originalPath ? { originalPath } : {})
     });
 
-    return NextResponse.json(result, { status: 201 });
+    return withCors(NextResponse.json(result, { status: 201 }), request, corsMethods);
   } catch (error) {
-    return toErrorResponse(error);
+    return toErrorResponse(error, request);
   }
 }
 
@@ -34,16 +41,28 @@ function getOptionalFormString(formData: FormData, key: string): string | undefi
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-function toErrorResponse(error: unknown) {
+function toErrorResponse(error: unknown, request: Request) {
   if (error instanceof AssetUploadError) {
-    return NextResponse.json({ error: error.message }, { status: error.status });
+    return withCors(
+      NextResponse.json({ error: error.message }, { status: error.status }),
+      request,
+      corsMethods
+    );
   }
 
   if (error instanceof EnvError) {
-    return NextResponse.json({ error: error.message }, { status: 503 });
+    return withCors(
+      NextResponse.json({ error: error.message }, { status: 503 }),
+      request,
+      corsMethods
+    );
   }
 
   const message = error instanceof Error ? error.message : "Unexpected error.";
 
-  return NextResponse.json({ error: message }, { status: 500 });
+  return withCors(
+    NextResponse.json({ error: message }, { status: 500 }),
+    request,
+    corsMethods
+  );
 }
