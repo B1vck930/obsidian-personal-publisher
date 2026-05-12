@@ -68,4 +68,22 @@ storage bucket note-assets exists and is public
 
 ## Manual Verification
 
-Use the Task 5 steps in `USER_ACTIONS.md` after Vercel deploys the latest commit.
+Use the Task 5 Obsidian steps in `USER_ACTIONS.md`.
+
+## Production API Smoke Test
+
+Latest production deployment:
+
+```text
+commit: 9b10df387118f880dd1a8eadd4844f7576e1be43
+state: READY
+alias: https://obsidian-personal-publisher.vercel.app
+```
+
+Production asset upload:
+
+```text
+POST /api/assets: pass
+returned assetId, url, storagePath
+uploaded public asset URL: HTTP 200 image/png
+```
