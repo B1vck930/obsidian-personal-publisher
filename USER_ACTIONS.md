@@ -2,63 +2,15 @@
 
 ## Required Now
 
-After Codex creates the Task 7 commit, run the commands below in normal Windows PowerShell. This is required because the Codex sandbox hit Windows ACL/EPERM while rebuilding `node_modules`.
+Run the production cleanup endpoint checks in normal Windows PowerShell after Vercel finishes deploying the Task 7 push.
 
 ## Why This Is Needed
 
-Task 7 changes only the web backend. Codex implemented the cleanup endpoint and tests, but local verification is blocked by dependency filesystem permissions in the sandbox:
-
-```text
-EPERM, Permission denied: node_modules\.pnpm\@supabase+supabase-js@2.105.4
-Cannot resolve @supabase/supabase-js
-```
+Local Task 7 verification passed and the commit was pushed. The remaining checks need your real Vercel `CLEANUP_SECRET`, which should stay private and should not be sent to Codex.
 
 ## Exact Steps
 
-### 1. Repair Local Dependencies And Verify
-
-```powershell
-cd C:\Users\admin\Documents\Obsidian\opp-cors-push
-
-if (Test-Path .pnpm-store) {
-  Remove-Item -Recurse -Force .pnpm-store
-}
-
-$env:HTTP_PROXY="http://127.0.0.1:40808"
-$env:HTTPS_PROXY="http://127.0.0.1:40808"
-$env:NO_PROXY="localhost,127.0.0.1"
-$env:CI="true"
-
-pnpm install --frozen-lockfile
-pnpm --filter @opp/web test
-pnpm --filter @opp/web typecheck
-pnpm --filter @opp/web build
-```
-
-Expected result:
-
-```text
-@opp/web test: pass
-@opp/web typecheck: pass
-@opp/web build: pass
-```
-
-### 2. Push Task 7
-
-```powershell
-cd C:\Users\admin\Documents\Obsidian
-git --git-dir C:\Users\admin\Documents\Obsidian\gitmeta-cors-push --work-tree C:\Users\admin\Documents\Obsidian\opp-cors-push -c http.sslBackend=openssl push -u origin main
-```
-
-Expected result:
-
-```text
-Everything up-to-date
-```
-
-or a normal push showing the Task 7 commit.
-
-### 3. Test Cleanup Endpoint After Vercel Deploys
+### 1. Test Cleanup Endpoint Without Secret
 
 Open without a secret first:
 
@@ -75,6 +27,8 @@ Expected result:
 ```text
 401
 ```
+
+### 2. Test Cleanup Endpoint With Secret
 
 Then run with your Vercel `CLEANUP_SECRET`:
 
@@ -96,7 +50,7 @@ Expected result:
 
 Counts may be higher if old expired pages/assets already exist.
 
-### 4. Safe Manual Expiration Test
+### 3. Safe Manual Expiration Test
 
 Create a short-lived test page:
 

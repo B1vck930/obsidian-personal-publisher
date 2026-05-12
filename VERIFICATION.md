@@ -84,6 +84,15 @@ pnpm --filter @opp/web typecheck: blocked after node_modules reinstall hit Windo
 pnpm --filter @opp/web build: blocked after node_modules reinstall hit Windows EPERM
 ```
 
+Latest normal PowerShell result:
+
+```text
+pnpm --filter @opp/web test: pass
+pnpm --filter @opp/web typecheck: pass
+pnpm --filter @opp/web build: pass
+git push: pass
+```
+
 Blocking errors:
 
 ```text
@@ -114,7 +123,7 @@ Cleanup summary returns deleted page and asset counts.
 
 ## Task 7 Production Verification Pending
 
-After Task 7 push and Vercel deployment:
+After Vercel deployment:
 
 ```text
 1. Open /api/cleanup-expired without secret and confirm 401.
