@@ -2,21 +2,33 @@
 
 ## Required Now
 
-1. Confirm the Vercel production environment variables for `obsidian-personal-publisher`.
-2. After Codex pushes Task 4, wait for the Vercel deployment to finish.
-3. Run the PowerShell backend smoke test below.
+Codex completed Task 5 code and automated verification. The only remaining actions are checks Codex cannot perform inside your local Obsidian UI.
 
-## Why This Is Needed
+## 1. Confirm Vercel Deployment
 
-Codex applied the Supabase schema directly, but Vercel secrets are external runtime settings. The API will build without them, but `POST /api/pages` and `/p/:slug` need Supabase values at runtime.
+Open:
 
-## Exact Steps
+```text
+https://vercel.com
+```
 
-### 1. Confirm Vercel Environment Variables
+Click path:
 
-Open Vercel project `obsidian-personal-publisher` -> Settings -> Environment Variables.
+```text
+Vercel Dashboard -> obsidian-personal-publisher -> Deployments
+```
 
-Confirm these variables exist for Production:
+Confirm the latest `main` deployment after the Task 5 commit is green.
+
+## 2. Confirm Production Environment Variables
+
+Click path:
+
+```text
+Vercel Dashboard -> obsidian-personal-publisher -> Settings -> Environment Variables
+```
+
+Confirm these Production variables exist:
 
 ```text
 NEXT_PUBLIC_SITE_URL=https://obsidian-personal-publisher.vercel.app
@@ -33,84 +45,93 @@ ENABLE_EXPERIMENTAL_COREPACK=1
 
 Important: `SUPABASE_URL` must not include `/rest/v1`.
 
-### 2. Wait For Deployment
+## 3. Smoke Test The Asset Upload API
 
-After Codex pushes this task, open:
+Open PowerShell and run:
+
+```powershell
+$pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
+$file = "$env:TEMP\opp-task5-test.png"
+[IO.File]::WriteAllBytes($file, [Convert]::FromBase64String($pngBase64))
+
+curl.exe -X POST "https://obsidian-personal-publisher.vercel.app/api/assets" -F "file=@$file;type=image/png" -F "originalPath=task5/opp-task5-test.png"
+```
+
+Expected result:
 
 ```text
-https://vercel.com
+JSON with assetId, url, and storagePath
 ```
 
-Go to the `obsidian-personal-publisher` project and confirm the latest deployment is green.
+Copy the returned `url` into your browser. The image should open.
 
-### 3. Create A Test Page From PowerShell
+## 4. Test In Obsidian
+
+Open Obsidian and make sure the local plugin is reloaded after the Task 5 build.
+
+Click path:
+
+```text
+Obsidian -> Settings -> Community plugins -> Installed plugins -> Obsidian Personal Publisher
+```
+
+If needed, toggle the plugin off and on.
+
+Confirm plugin settings:
+
+```text
+API Base URL = https://obsidian-personal-publisher.vercel.app
+Max Image Size MB = 5
+```
+
+Create or open a note with a real local image:
+
+```markdown
+# Task 5 Image Upload Test
+
+![[image.png]]
+```
 
 Run:
 
-```powershell
-$body = @{
-  title = "Task 4 Backend Test"
-  markdown = "# Task 4 Backend Test`n`n| A | B |`n| --- | --- |`n| 1 | 2 |`n`n> [!NOTE] Test callout`n> Backend rendering works."
-  theme = "notion"
-  footerText = "Published by XIAOWANG - 18624433439"
-  expiresInDays = 7
-} | ConvertTo-Json
-
-$created = Invoke-RestMethod -Method Post -Uri "https://obsidian-personal-publisher.vercel.app/api/pages" -ContentType "application/json" -Body $body
-$created
-Start-Process $created.url
+```text
+Command Palette -> Publish current note
 ```
 
-### 4. Verify Update Keeps The Same URL
+Expected notice:
 
-Run:
-
-```powershell
-$updateBody = @{
-  ownerToken = $created.ownerToken
-  title = "Task 4 Backend Test Updated"
-  markdown = "# Task 4 Backend Test Updated`n`nThe same URL should show updated content."
-  theme = "notion"
-  footerText = "Published by XIAOWANG - 18624433439"
-  expiresInDays = 7
-} | ConvertTo-Json
-
-$updated = Invoke-RestMethod -Method Put -Uri "https://obsidian-personal-publisher.vercel.app/api/pages/$($created.pageId)" -ContentType "application/json" -Body $updateBody
-$updated
-Start-Process $updated.url
+```text
+Publish preview ready for "Task 5 Image Upload Test".
+Local assets detected: 1.
+Uploaded assets: 1.
+Warnings: 0.
+Backend publishing is not implemented yet.
 ```
 
-Confirm `$updated.url` is the same as `$created.url`.
+Now test a missing image:
 
-### 5. Verify Delete Makes The Page Unavailable
+```markdown
+# Task 5 Missing Image Test
 
-Run:
-
-```powershell
-$deleteBody = @{
-  ownerToken = $created.ownerToken
-} | ConvertTo-Json
-
-Invoke-RestMethod -Method Delete -Uri "https://obsidian-personal-publisher.vercel.app/api/pages/$($created.pageId)" -ContentType "application/json" -Body $deleteBody
-Start-Process $created.url
+![[missing-image.png]]
 ```
 
-The page should now show unavailable or 404.
+Expected notice:
 
-## Expected Result
-
-- `POST /api/pages` returns `pageId`, `slug`, `url`, `ownerToken`, and `expiresAt`.
-- The public page opens without login.
-- Footer shows `Updated at`, `Expires at`, and `Published by XIAOWANG - 18624433439`.
-- `PUT /api/pages/:id` keeps the same URL and refreshes expiration.
-- `DELETE /api/pages/:id` removes the public page.
+```text
+Local assets detected: 1.
+Uploaded assets: 0.
+Warnings: 1.
+Missing local image: missing-image.png
+Backend publishing is not implemented yet.
+```
 
 ## After Completion
 
 Tell Codex:
 
 ```text
-Task 4 backend manual test passed.
+Task 5 manual testing passed.
 ```
 
-If any command fails, send Codex the exact error output.
+If anything fails, send Codex the exact error output or a screenshot.

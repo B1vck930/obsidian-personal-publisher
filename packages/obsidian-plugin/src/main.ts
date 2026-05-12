@@ -1,4 +1,5 @@
 import { Notice, Plugin, TFile } from "obsidian";
+import { createObsidianAssetReader, uploadMarkdownAssets } from "./assetUpload";
 import {
   defaultSettings,
   normalizeSettings,
@@ -7,7 +8,6 @@ import {
 import {
   type MarkdownAssetTransformOptions,
   extractTitle,
-  formatPublishPreviewNotice,
   transformMarkdownAssets
 } from "./markdownTransform";
 import type { PersonalPublisherSettings } from "./types";
@@ -60,8 +60,24 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
       }
 
       const assetPreview = transformMarkdownAssets(markdown, assetOptions);
+      const uploadPreview = await uploadMarkdownAssets({
+        markdown,
+        apiBaseUrl: this.settings.apiBaseUrl,
+        maxImageSizeMb: this.settings.maxImageSizeMb,
+        readAsset: createObsidianAssetReader(this.app)
+      });
+      const firstWarning = uploadPreview.warnings[0]?.message;
 
-      new Notice(formatPublishPreviewNotice(title, assetPreview));
+      new Notice(
+        [
+          `Publish preview ready for "${title}".`,
+          `Local assets detected: ${assetPreview.assetPaths.length}.`,
+          `Uploaded assets: ${uploadPreview.uploadedAssets.length}.`,
+          `Warnings: ${uploadPreview.warnings.length}.`,
+          ...(firstWarning ? [firstWarning] : []),
+          "Backend publishing is not implemented yet."
+        ].join("\n")
+      );
     } catch (error) {
       console.error(error);
       new Notice(`Could not read "${file.path}". Check the note and try again.`);

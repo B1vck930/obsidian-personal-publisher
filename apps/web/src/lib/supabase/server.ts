@@ -12,7 +12,7 @@ export function createServerSupabaseClient() {
       autoRefreshToken: false
     },
     global: {
-      fetch: (input, init) =>
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
         fetch(input, {
           ...init,
           cache: "no-store"
