@@ -11,6 +11,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
+    requireCleanupSecretParameter(request.url);
+
     const env = getCleanupEnv();
 
     requireCleanupSecret(request.url, env.cleanupSecret);
@@ -35,4 +37,12 @@ function toErrorResponse(error: unknown) {
   const message = error instanceof Error ? error.message : "Unexpected error.";
 
   return NextResponse.json({ error: message }, { status: 500 });
+}
+
+function requireCleanupSecretParameter(requestUrl: string): void {
+  const providedSecret = new URL(requestUrl).searchParams.get("secret");
+
+  if (!providedSecret) {
+    throw new CleanupError(401, "Invalid cleanup secret.");
+  }
 }

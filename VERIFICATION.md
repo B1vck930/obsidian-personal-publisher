@@ -126,9 +126,18 @@ Cleanup summary returns deleted page and asset counts.
 After Vercel deployment:
 
 ```text
-1. Open /api/cleanup-expired without secret and confirm 401.
-2. Open /api/cleanup-expired?secret=<CLEANUP_SECRET> and confirm success JSON.
-3. Create a short-lived test page.
-4. Trigger cleanup after it expires.
-5. Confirm the public page URL returns 404.
+1. Confirm CLEANUP_SECRET exists in Vercel Production env.
+2. Open /api/cleanup-expired without secret and confirm 401.
+3. Open /api/cleanup-expired?secret=<CLEANUP_SECRET> and confirm success JSON.
+4. Create a short-lived test page.
+5. Trigger cleanup after it expires.
+6. Confirm the public page URL returns 404.
+```
+
+Observed production result before the follow-up fix:
+
+```text
+/api/cleanup-expired without secret: 503
+Cause: route read CLEANUP_SECRET before checking whether the request included a secret query parameter; production also appears to be missing CLEANUP_SECRET.
+Follow-up fix: reject requests without ?secret=... with 401 before reading env.
 ```

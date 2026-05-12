@@ -1,7 +1,7 @@
 # Project Status
 
 ## Current Task
-Task 7 - Expiration cleanup implemented, locally verified, and pushed. Production cleanup endpoint verification is pending.
+Task 7 - Expiration cleanup implemented, locally verified, and pushed. Production cleanup endpoint env/config verification is pending.
 
 ## Completed
 - Task 1 - Project foundation and Vercel baseline.
@@ -19,8 +19,10 @@ Task 7 - Expiration cleanup implemented, locally verified, and pushed. Productio
 - apps/web/vercel.json daily Cron config: confirmed
 - Git push: pass
 - Vercel deployment: pending production endpoint confirmation
-- Manual cleanup endpoint test: required after deployment
+- Manual cleanup endpoint without secret returned 503 before the follow-up fix, indicating production `CLEANUP_SECRET` is missing or not available to the deployment
+- Follow-up fix added so requests without a `secret` query return 401 before reading env
+- Manual cleanup endpoint test with configured `CLEANUP_SECRET`: required after deployment
 
 ## Blockers
 - Codex cannot verify the cleanup endpoint with the real `CLEANUP_SECRET` because the secret should remain private.
-- Codex production network check without secret failed from the sandbox and escalation review timed out. User should run the cleanup endpoint checks in normal PowerShell.
+- Vercel production needs `CLEANUP_SECRET` configured and a redeploy before the protected cleanup endpoint can succeed.
