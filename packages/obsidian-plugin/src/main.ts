@@ -1,15 +1,20 @@
 import { Notice, Plugin, TFile } from "obsidian";
-import { createObsidianAssetReader, uploadMarkdownAssets } from "./assetUpload";
+import { createObsidianAssetReader } from "./assetUpload";
 import {
   defaultSettings,
   normalizeSettings,
   PersonalPublisherSettingTab
 } from "./settings";
+import { extractTitle } from "./markdownTransform";
 import {
-  type MarkdownAssetTransformOptions,
-  extractTitle,
-  transformMarkdownAssets
-} from "./markdownTransform";
+  applyPublishedPageMetadata,
+  buildPublishNotice,
+  buildUnpublishNotice,
+  publishMarkdownNote,
+  PublishWorkflowError,
+  removePublishedPageMetadata,
+  unpublishPublishedNote
+} from "./publishWorkflow";
 import type { PersonalPublisherSettings } from "./types";
 
 export default class ObsidianPersonalPublisherPlugin extends Plugin {
@@ -52,35 +57,27 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
     try {
       const markdown = await this.app.vault.read(file);
       const title = extractTitle(markdown, file.basename);
-      const assetOptions: MarkdownAssetTransformOptions = {};
-      const isAssetAvailable = this.createAssetAvailabilityChecker();
-
-      if (isAssetAvailable) {
-        assetOptions.isAssetAvailable = isAssetAvailable;
-      }
-
-      const assetPreview = transformMarkdownAssets(markdown, assetOptions);
-      const uploadPreview = await uploadMarkdownAssets({
+      const existingMetadata = this.settings.publishedPages[file.path];
+      const result = await publishMarkdownNote({
+        filePath: file.path,
+        title,
         markdown,
-        apiBaseUrl: this.settings.apiBaseUrl,
-        maxImageSizeMb: this.settings.maxImageSizeMb,
+        settings: this.settings,
+        ...(existingMetadata ? { existingMetadata } : {}),
         readAsset: createObsidianAssetReader(this.app)
       });
-      const firstWarning = uploadPreview.warnings[0]?.message;
 
-      new Notice(
-        [
-          `Publish preview ready for "${title}".`,
-          `Local assets detected: ${assetPreview.assetPaths.length}.`,
-          `Uploaded assets: ${uploadPreview.uploadedAssets.length}.`,
-          `Warnings: ${uploadPreview.warnings.length}.`,
-          ...(firstWarning ? [firstWarning] : []),
-          "Backend publishing is not implemented yet."
-        ].join("\n")
+      this.settings = applyPublishedPageMetadata(
+        this.settings,
+        file.path,
+        result.metadata
       );
+      await this.saveSettings();
+
+      new Notice(buildPublishNotice(result));
     } catch (error) {
       console.error(error);
-      new Notice(`Could not read "${file.path}". Check the note and try again.`);
+      new Notice(formatPublishError(error, file.path));
     }
   }
 
@@ -99,9 +96,24 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
       return;
     }
 
-    new Notice(
-      "Unpublish is not connected yet. Backend publishing is not implemented in Task 2."
-    );
+    try {
+      await unpublishPublishedNote({
+        apiBaseUrl: this.settings.apiBaseUrl,
+        metadata
+      });
+
+      this.settings = removePublishedPageMetadata(this.settings, file.path);
+      await this.saveSettings();
+
+      new Notice(buildUnpublishNotice(metadata.url));
+    } catch (error) {
+      console.error(error);
+      new Notice(
+        error instanceof Error
+          ? `Could not unpublish "${file.basename}": ${error.message}`
+          : `Could not unpublish "${file.basename}".`
+      );
+    }
   }
 
   getActiveMarkdownFile(): TFile | null {
@@ -114,10 +126,6 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
     return file;
   }
 
-  createAssetAvailabilityChecker(): MarkdownAssetTransformOptions["isAssetAvailable"] {
-    return (path) => Boolean(this.app.metadataCache.getFirstLinkpathDest(path, ""));
-  }
-
   async loadSettings() {
     this.settings = normalizeSettings(await this.loadData());
   }
@@ -125,4 +133,16 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
   async saveSettings() {
     await this.saveData(this.settings);
   }
+}
+
+function formatPublishError(error: unknown, filePath: string): string {
+  if (error instanceof PublishWorkflowError) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return `Could not publish "${filePath}": ${error.message}`;
+  }
+
+  return `Could not publish "${filePath}".`;
 }

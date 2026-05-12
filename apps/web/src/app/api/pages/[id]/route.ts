@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { corsOptionsResponse, withCors } from "../../../../lib/cors";
 import { EnvError } from "../../../../lib/env";
 import {
   deletePage,
@@ -11,11 +12,17 @@ import { createSupabasePageRepository } from "../../../../lib/supabase/pageRepos
 
 export const dynamic = "force-dynamic";
 
+const corsMethods = "PUT, DELETE, OPTIONS";
+
 type PageRouteContext = {
   params: {
     id: string;
   };
 };
+
+export function OPTIONS(request: Request) {
+  return corsOptionsResponse(request, corsMethods);
+}
 
 export async function PUT(request: Request, context: PageRouteContext) {
   try {
@@ -27,9 +34,9 @@ export async function PUT(request: Request, context: PageRouteContext) {
       input.page
     );
 
-    return NextResponse.json(result);
+    return withCors(NextResponse.json(result), request, corsMethods);
   } catch (error) {
-    return toErrorResponse(error);
+    return toErrorResponse(error, request);
   }
 }
 
@@ -42,22 +49,34 @@ export async function DELETE(request: Request, context: PageRouteContext) {
       input.ownerToken
     );
 
-    return NextResponse.json({ success: true });
+    return withCors(NextResponse.json({ success: true }), request, corsMethods);
   } catch (error) {
-    return toErrorResponse(error);
+    return toErrorResponse(error, request);
   }
 }
 
-function toErrorResponse(error: unknown) {
+function toErrorResponse(error: unknown, request: Request) {
   if (error instanceof PageApiError) {
-    return NextResponse.json({ error: error.message }, { status: error.status });
+    return withCors(
+      NextResponse.json({ error: error.message }, { status: error.status }),
+      request,
+      corsMethods
+    );
   }
 
   if (error instanceof EnvError) {
-    return NextResponse.json({ error: error.message }, { status: 503 });
+    return withCors(
+      NextResponse.json({ error: error.message }, { status: 503 }),
+      request,
+      corsMethods
+    );
   }
 
   const message = error instanceof Error ? error.message : "Unexpected error.";
 
-  return NextResponse.json({ error: message }, { status: 500 });
+  return withCors(
+    NextResponse.json({ error: message }, { status: 500 }),
+    request,
+    corsMethods
+  );
 }
