@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  PublishApiError,
   publishPageToApi,
   unpublishPageInApi,
   type PagePublishPayload
@@ -79,7 +80,27 @@ describe("publish API client", () => {
         fetchImpl: async () =>
           Response.json({ error: "Invalid owner token." }, { status: 403 })
       })
-    ).rejects.toThrow("Invalid owner token.");
+    ).rejects.toMatchObject({
+      name: "PublishApiError",
+      status: 403,
+      message: "Invalid owner token."
+    });
+  });
+
+  it("surfaces backend availability errors", async () => {
+    await expect(
+      publishPageToApi({
+        apiBaseUrl: "https://example.com",
+        payload: createPayload(),
+        fetchImpl: async () => {
+          throw new TypeError("Failed to fetch");
+        }
+      })
+    ).rejects.toMatchObject({
+      name: "PublishApiError",
+      status: null,
+      message: "Backend unavailable: Failed to fetch"
+    } satisfies Partial<PublishApiError>);
   });
 });
 

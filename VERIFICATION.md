@@ -141,3 +141,39 @@ Observed production result before the follow-up fix:
 Cause: route read CLEANUP_SECRET before checking whether the request included a secret query parameter; production also appears to be missing CLEANUP_SECRET.
 Follow-up fix: reject requests without ?secret=... with 401 before reading env.
 ```
+
+## Task 8 Commands
+
+Run from repository root:
+
+```powershell
+pnpm install --frozen-lockfile
+pnpm test
+pnpm typecheck
+pnpm --filter @opp/web build
+pnpm --filter @opp/obsidian-plugin build
+```
+
+Latest Codex result:
+
+```text
+pnpm install --frozen-lockfile: blocked by Windows EPERM on node_modules\.pnpm\@supabase+supabase-js@2.105.4
+pnpm test: blocked by Codex sandbox / Windows ACL esbuild config access
+pnpm typecheck: @opp/obsidian-plugin passed; @opp/web blocked by @supabase/supabase-js dependency access
+pnpm --filter @opp/web build: blocked by @supabase/supabase-js dependency access
+pnpm --filter @opp/obsidian-plugin build: blocked by Codex sandbox / Windows ACL esbuild entrypoint access
+```
+
+Task 8 changes made:
+
+```text
+Plugin API errors now preserve HTTP status codes.
+Network failures now show backend unavailable.
+Invalid owner token notices are explicit.
+Expired/not-found page notices are explicit.
+Clipboard failure notice remains non-fatal and shows the URL.
+README now documents the final MVP, setup, env vars, Supabase schema, Obsidian install, cleanup testing, troubleshooting, cost controls, limitations, and final acceptance checklist.
+.pnpm-store/ is ignored.
+```
+
+Final verification still required in normal PowerShell because the Codex sandbox cannot repair or read the local dependency tree.

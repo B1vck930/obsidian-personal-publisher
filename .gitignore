@@ -7,3 +7,4 @@ main.js
 .env.*
 !.env.example
 .corepack/
+.pnpm-store/

@@ -25,6 +25,16 @@ export type PublishPageToApiOptions = {
   fetchImpl?: typeof fetch;
 };
 
+export class PublishApiError extends Error {
+  status: number | null;
+
+  constructor(message: string, status: number | null = null) {
+    super(message);
+    this.name = "PublishApiError";
+    this.status = status;
+  }
+}
+
 export async function publishPageToApi({
   apiBaseUrl,
   payload,
@@ -109,17 +119,28 @@ async function requestJson<T>(
     body: Record<string, unknown>;
   }
 ): Promise<T> {
-  const response = await fetchImpl(request.url, {
-    method: request.method,
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(request.body)
-  });
+  let response: Response;
+
+  try {
+    response = await fetchImpl(request.url, {
+      method: request.method,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request.body)
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown network error.";
+
+    throw new PublishApiError(`Backend unavailable: ${message}`);
+  }
 
   if (!response.ok) {
     const errorMessage = await safeReadError(response);
-    throw new Error(errorMessage || `Request failed with status ${response.status}.`);
+    throw new PublishApiError(
+      errorMessage || `Request failed with status ${response.status}.`,
+      response.status
+    );
   }
 
   return (await response.json()) as T;

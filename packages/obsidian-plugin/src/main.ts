@@ -15,6 +15,7 @@ import {
   removePublishedPageMetadata,
   unpublishPublishedNote
 } from "./publishWorkflow";
+import { PublishApiError } from "./publishApi";
 import type { PersonalPublisherSettings } from "./types";
 
 export default class ObsidianPersonalPublisherPlugin extends Plugin {
@@ -77,7 +78,7 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
       new Notice(buildPublishNotice(result));
     } catch (error) {
       console.error(error);
-      new Notice(formatPublishError(error, file.path));
+      new Notice(formatPublishError(error, file.basename));
     }
   }
 
@@ -108,11 +109,7 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
       new Notice(buildUnpublishNotice(metadata.url));
     } catch (error) {
       console.error(error);
-      new Notice(
-        error instanceof Error
-          ? `Could not unpublish "${file.basename}": ${error.message}`
-          : `Could not unpublish "${file.basename}".`
-      );
+      new Notice(formatUnpublishError(error, file.basename));
     }
   }
 
@@ -135,14 +132,52 @@ export default class ObsidianPersonalPublisherPlugin extends Plugin {
   }
 }
 
-function formatPublishError(error: unknown, filePath: string): string {
+function formatPublishError(error: unknown, title: string): string {
   if (error instanceof PublishWorkflowError) {
     return error.message;
   }
 
-  if (error instanceof Error) {
-    return `Could not publish "${filePath}": ${error.message}`;
+  if (error instanceof PublishApiError) {
+    return formatApiError("publish", title, error);
   }
 
-  return `Could not publish "${filePath}".`;
+  if (error instanceof Error) {
+    return `Could not publish "${title}": ${error.message}`;
+  }
+
+  return `Could not publish "${title}".`;
+}
+
+function formatUnpublishError(error: unknown, title: string): string {
+  if (error instanceof PublishApiError) {
+    return formatApiError("unpublish", title, error);
+  }
+
+  if (error instanceof Error) {
+    return `Could not unpublish "${title}": ${error.message}`;
+  }
+
+  return `Could not unpublish "${title}".`;
+}
+
+function formatApiError(
+  action: "publish" | "unpublish",
+  title: string,
+  error: PublishApiError
+): string {
+  const verb = action === "publish" ? "publish" : "unpublish";
+
+  if (error.status === 403) {
+    return `Could not ${verb} "${title}": invalid owner token. Publish metadata may be stale.`;
+  }
+
+  if (error.status === 404 || error.status === 410) {
+    return `Could not ${verb} "${title}": the published page was not found or has expired.`;
+  }
+
+  if (error.status && error.status >= 500) {
+    return `Could not ${verb} "${title}": backend unavailable. Try again later.`;
+  }
+
+  return `Could not ${verb} "${title}": ${error.message}`;
 }
