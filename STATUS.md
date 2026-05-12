@@ -1,7 +1,7 @@
 # Project Status
 
 ## Current Task
-Task 6 - Connect plugin publish, update, and unpublish completed in code. Manual Obsidian end-to-end verification is required after deployment and plugin rebuild.
+Task 6 - Connect plugin publish, update, and unpublish is complete and manually verified. Ready to start Task 7.
 
 ## Completed
 - Task 1 - Project foundation and Vercel baseline.
@@ -16,9 +16,10 @@ Task 6 - Connect plugin publish, update, and unpublish completed in code. Manual
 - pnpm --filter @opp/web build: pass
 - pnpm test: blocked in Codex sandbox by Windows ACL/esbuild directory access
 - pnpm --filter @opp/obsidian-plugin build: blocked in Codex sandbox by Windows ACL/esbuild directory access
-- Vercel deployment: pending after Task 6 push
-- Manual Obsidian publish/update/unpublish test: required
+- Vercel production page API smoke test: pass
+- Vercel page API CORS preflight for Obsidian origin: pass
+- Manual Obsidian publish/update/unpublish test: pass
 
 ## Blockers
-- Codex sandbox cannot run Vitest or Obsidian plugin esbuild in this workspace because esbuild attempts to read a parent directory that Windows ACL denies.
-- User must run the plugin build locally in normal PowerShell and manually test in Obsidian.
+- No active Task 6 product blockers.
+- Codex sandbox still cannot run Vitest or Obsidian plugin esbuild in this workspace because esbuild attempts to read a parent directory that Windows ACL denies. Normal local PowerShell manual verification passed.
