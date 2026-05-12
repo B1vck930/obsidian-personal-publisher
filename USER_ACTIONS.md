@@ -2,17 +2,48 @@
 
 ## Required Now
 
-Run final local verification in normal Windows PowerShell, push the final MVP commit if Codex push fails, confirm `CLEANUP_SECRET` in Vercel, and run the final manual acceptance checklist.
+Push the final MVP commits, run final local verification in normal Windows PowerShell, confirm `CLEANUP_SECRET` in Vercel, and run the final manual acceptance checklist.
 
 ## Why This Is Needed
 
-Codex completed the remaining Task 8 code and documentation. Automated checks in the Codex sandbox are blocked by Windows ACL/EPERM on `node_modules`, especially `@supabase/supabase-js` and esbuild config resolution. The same commands have passed in normal PowerShell before, so final verification should be run there.
+Codex completed the remaining Task 8 code and documentation. Codex tried to push twice, but `git push` timed out and the local branch remains ahead of `origin/main`. Automated checks in the Codex sandbox are also blocked by Windows ACL/EPERM on `node_modules`, especially `@supabase/supabase-js` and esbuild config resolution. The same commands have passed in normal PowerShell before, so final verification should be run there.
 
 The protected cleanup endpoint also needs your real Vercel `CLEANUP_SECRET`, which should stay private and should not be sent to Codex.
 
 ## Exact Steps
 
-### 1. Repair Dependencies And Run Final Automated Checks
+### 1. Push The Final Commits
+
+```powershell
+cd C:\Users\admin\Documents\Obsidian
+git --git-dir C:\Users\admin\Documents\Obsidian\gitmeta-cors-push --work-tree C:\Users\admin\Documents\Obsidian\opp-cors-push -c http.sslBackend=openssl push -u origin main
+```
+
+Expected result:
+
+```text
+branch 'main' set up to track 'origin/main'
+```
+
+or:
+
+```text
+Everything up-to-date
+```
+
+Then confirm:
+
+```powershell
+git --git-dir C:\Users\admin\Documents\Obsidian\gitmeta-cors-push --work-tree C:\Users\admin\Documents\Obsidian\opp-cors-push status -sb
+```
+
+Expected:
+
+```text
+## main...origin/main
+```
+
+### 2. Repair Dependencies And Run Final Automated Checks
 
 ```powershell
 cd C:\Users\admin\Documents\Obsidian\opp-cors-push
@@ -41,21 +72,6 @@ Typecheck passes.
 Web build passes.
 Obsidian plugin build passes.
 ```
-
-### 2. Push If Codex Did Not Already Push
-
-```powershell
-cd C:\Users\admin\Documents\Obsidian
-git --git-dir C:\Users\admin\Documents\Obsidian\gitmeta-cors-push --work-tree C:\Users\admin\Documents\Obsidian\opp-cors-push -c http.sslBackend=openssl push -u origin main
-```
-
-Expected result:
-
-```text
-Everything up-to-date
-```
-
-or a normal push showing the final MVP commit.
 
 ### 3. Check Or Add CLEANUP_SECRET In Vercel
 

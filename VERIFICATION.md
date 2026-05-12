@@ -176,4 +176,11 @@ README now documents the final MVP, setup, env vars, Supabase schema, Obsidian i
 .pnpm-store/ is ignored.
 ```
 
+Final push and verification status:
+
+```text
+Codex git push attempt 1: timed out after 120 seconds.
+Codex git push attempt 2: timed out after 180 seconds.
+Local branch status after attempts: main...origin/main [ahead 1].
 Final verification still required in normal PowerShell because the Codex sandbox cannot repair or read the local dependency tree.
+```

@@ -1,7 +1,7 @@
 # Project Status
 
 ## Current Task
-Task 8 - Final MVP polish and documentation implemented locally. Final normal PowerShell verification, push, Vercel deployment confirmation, and manual acceptance testing are pending.
+Task 8 - Final MVP polish and documentation implemented locally. Final push, normal PowerShell verification, Vercel deployment confirmation, and manual acceptance testing are pending.
 
 ## Completed
 - Task 1 - Project foundation and Vercel baseline.
@@ -21,10 +21,12 @@ Task 8 - Final MVP polish and documentation implemented locally. Final normal Po
 - pnpm --filter @opp/obsidian-plugin build: blocked in Codex sandbox by Windows ACL/esbuild entrypoint access
 - apps/web/vercel.json daily Cron config: confirmed
 - Previous normal PowerShell Task 7 verification: @opp/web test/typecheck/build passed
+- Git push from Codex: failed twice by timeout; local branch remains ahead of origin
 - Vercel deployment: pending final push/deployment confirmation
 - Manual Obsidian final acceptance test: required
 
 ## Blockers
 - Codex cannot verify the cleanup endpoint with the real `CLEANUP_SECRET` because the secret should remain private.
 - Codex sandbox cannot complete dependency install or build after Windows EPERM blocks @supabase/supabase-js in node_modules.
+- Codex could not push the final Task 8 commit because git push timed out twice on this machine.
 - Vercel production needs `CLEANUP_SECRET` configured and a redeploy before the protected cleanup endpoint can succeed.
