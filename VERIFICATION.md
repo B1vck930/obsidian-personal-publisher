@@ -184,3 +184,42 @@ Codex git push attempt 2: timed out after 180 seconds.
 Local branch status after attempts: main...origin/main [ahead 1].
 Final verification still required in normal PowerShell because the Codex sandbox cannot repair or read the local dependency tree.
 ```
+
+## Final Preview-Only Notice Bugfix
+
+Issue:
+
+```text
+Obsidian still showed: Backend publishing is not implemented yet.
+```
+
+Cause:
+
+```text
+The Task 3 preview-only helper remained in packages/obsidian-plugin/src/markdownTransform.ts and its tests, even though the active publish command already calls publishMarkdownNote -> publishPageToApi -> /api/pages.
+```
+
+Fix:
+
+```text
+Removed formatPublishPreviewNotice from source.
+Removed preview notice tests.
+Confirmed source search in packages/obsidian-plugin/src and tests has no matches for the old text.
+```
+
+Required final verification in normal PowerShell:
+
+```powershell
+pnpm install --frozen-lockfile
+pnpm --filter @opp/obsidian-plugin typecheck
+pnpm --filter @opp/obsidian-plugin build
+Select-String -Path packages\obsidian-plugin\main.js -Pattern "Backend publishing is not implemented yet","Publish preview ready"
+Select-String -Path packages\obsidian-plugin\main.js -Pattern "/api/pages","Published current note"
+```
+
+Expected:
+
+```text
+The first Select-String command prints no matches.
+The second Select-String command prints matches.
+```

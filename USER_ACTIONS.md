@@ -2,11 +2,19 @@
 
 ## Required Now
 
-Push the final MVP commits, run final local verification in normal Windows PowerShell, confirm `CLEANUP_SECRET` in Vercel, and run the final manual acceptance checklist.
+Push the final commits, rebuild the Obsidian plugin, overwrite the plugin files inside your vault, restart the plugin, and retest publish.
 
 ## Why This Is Needed
 
-Codex completed the remaining Task 8 code and documentation. Codex tried to push twice, but `git push` timed out and the local branch remains ahead of `origin/main`. Automated checks in the Codex sandbox are also blocked by Windows ACL/EPERM on `node_modules`, especially `@supabase/supabase-js` and esbuild config resolution. The same commands have passed in normal PowerShell before, so final verification should be run there.
+The plugin source still had an obsolete Task 3 preview helper that contained:
+
+```text
+Backend publishing is not implemented yet.
+```
+
+Codex removed that helper and its tests. The active `publishCurrentNote` implementation already uses the real Task 6 backend flow, but Obsidian loads the generated `main.js`, not TypeScript source. If the vault plugin folder still contains an old `main.js`, Obsidian will keep showing the old notice.
+
+Codex cannot reliably rebuild or push from the sandbox because this machine repeatedly hits Windows ACL/EPERM and git HTTPS timeouts. Run the steps below in normal PowerShell.
 
 The protected cleanup endpoint also needs your real Vercel `CLEANUP_SECRET`, which should stay private and should not be sent to Codex.
 
@@ -43,7 +51,7 @@ Expected:
 ## main...origin/main
 ```
 
-### 2. Repair Dependencies And Run Final Automated Checks
+### 2. Rebuild The Obsidian Plugin
 
 ```powershell
 cd C:\Users\admin\Documents\Obsidian\opp-cors-push
@@ -58,22 +66,118 @@ $env:NO_PROXY="localhost,127.0.0.1"
 $env:CI="true"
 
 pnpm install --frozen-lockfile
-pnpm test
-pnpm typecheck
-pnpm --filter @opp/web build
+pnpm --filter @opp/obsidian-plugin typecheck
 pnpm --filter @opp/obsidian-plugin build
 ```
 
 Expected result:
 
 ```text
-All tests pass.
-Typecheck passes.
-Web build passes.
 Obsidian plugin build passes.
 ```
 
-### 3. Check Or Add CLEANUP_SECRET In Vercel
+### 3. Confirm The Old Preview Text Is Gone From The Built Plugin
+
+```powershell
+Select-String -Path C:\Users\admin\Documents\Obsidian\opp-cors-push\packages\obsidian-plugin\main.js -Pattern "Backend publishing is not implemented yet","Publish preview ready"
+```
+
+Expected result:
+
+```text
+No output
+```
+
+Then confirm the real backend API route is present:
+
+```powershell
+Select-String -Path C:\Users\admin\Documents\Obsidian\opp-cors-push\packages\obsidian-plugin\main.js -Pattern "/api/pages","Published current note"
+```
+
+Expected result: output containing `/api/pages` and `Published current note`.
+
+### 4. Copy The Rebuilt Plugin Into Your Obsidian Vault
+
+Copy these files:
+
+```text
+C:\Users\admin\Documents\Obsidian\opp-cors-push\packages\obsidian-plugin\main.js
+C:\Users\admin\Documents\Obsidian\opp-cors-push\packages\obsidian-plugin\manifest.json
+```
+
+Paste and overwrite them in your installed plugin folder:
+
+```text
+<your vault>\.obsidian\plugins\obsidian-personal-publisher\
+```
+
+Based on your screenshots, the vault is likely under your `WANGXIAO` Obsidian folder. If unsure, in Obsidian open:
+
+```text
+Settings -> Community plugins -> Installed plugins -> Obsidian Personal Publisher
+```
+
+The installed plugin files are under that vault's `.obsidian\plugins\obsidian-personal-publisher` folder.
+
+### 5. Restart The Plugin In Obsidian
+
+In Obsidian:
+
+```text
+Settings -> Community plugins -> Installed plugins -> Obsidian Personal Publisher
+```
+
+Turn it off, then turn it on.
+
+### 6. Confirm Plugin Settings
+
+In Obsidian:
+
+```text
+Settings -> Community plugins -> Obsidian Personal Publisher
+```
+
+Confirm:
+
+```text
+API Base URL = https://obsidian-personal-publisher.vercel.app
+Default Theme = notion
+Default Expiration Days = 7
+Footer Text = Published by XIAOWANG - 18624433439
+Max Image Size MB = 5
+```
+
+### 7. Retest Real Publish
+
+Open a note, then run:
+
+```text
+Command Palette -> Publish current note
+```
+
+Expected notice:
+
+```text
+Published current note.
+URL copied to clipboard.
+URL: https://obsidian-personal-publisher.vercel.app/p/...
+Uploaded assets: ...
+Expires at: ...
+```
+
+If it is a note already published before, expected notice may start with:
+
+```text
+Updated current note.
+```
+
+It must not say:
+
+```text
+Backend publishing is not implemented yet.
+```
+
+### 8. Check Or Add CLEANUP_SECRET In Vercel
 
 In browser:
 
@@ -103,7 +207,7 @@ After adding or changing the variable, redeploy the latest deployment:
 Vercel -> Deployments -> latest deployment -> ... menu -> Redeploy
 ```
 
-### 4. Test Cleanup Endpoint Without Secret
+### 9. Test Cleanup Endpoint Without Secret
 
 Open without a secret first:
 
@@ -123,7 +227,7 @@ Expected result:
 
 If this still returns `503`, Vercel has not deployed the follow-up fix yet.
 
-### 5. Test Cleanup Endpoint With Secret
+### 10. Test Cleanup Endpoint With Secret
 
 Then run with your Vercel `CLEANUP_SECRET`:
 
@@ -147,7 +251,7 @@ Counts may be higher if old expired pages/assets already exist.
 
 If this returns `503`, `CLEANUP_SECRET` is still missing from the production deployment or the deployment was not redeployed after adding it.
 
-### 6. Safe Manual Expiration Test
+### 11. Safe Manual Expiration Test
 
 Create a short-lived test page:
 
@@ -189,28 +293,7 @@ Expected result:
 404
 ```
 
-### 7. Reinstall The Final Obsidian Plugin Build
-
-Copy these files:
-
-```text
-C:\Users\admin\Documents\Obsidian\opp-cors-push\packages\obsidian-plugin\main.js
-C:\Users\admin\Documents\Obsidian\opp-cors-push\packages\obsidian-plugin\manifest.json
-```
-
-Paste and overwrite them in:
-
-```text
-<your vault>\.obsidian\plugins\obsidian-personal-publisher\
-```
-
-Then in Obsidian:
-
-```text
-Settings -> Community plugins -> Installed plugins -> Obsidian Personal Publisher -> off -> on
-```
-
-### 8. Final Manual Acceptance Test
+### 12. Final Manual Acceptance Test
 
 1. Open a Markdown note with text, a table, and an image.
 2. Run `Command Palette -> Publish current note`.
@@ -229,6 +312,8 @@ Settings -> Community plugins -> Installed plugins -> Obsidian Personal Publishe
 
 - Final local checks pass in normal PowerShell.
 - Vercel deploys the final commit.
+- Built plugin no longer contains the old preview-only text.
+- Obsidian notice shows real publish/update success with a public URL.
 - Cleanup without secret returns 401.
 - Cleanup with the correct secret returns a JSON summary.
 - Expired test page is deleted and its public URL becomes unavailable.

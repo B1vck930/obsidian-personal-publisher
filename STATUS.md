@@ -1,7 +1,7 @@
 # Project Status
 
 ## Current Task
-Task 8 - Final MVP polish and documentation implemented locally. Final push, normal PowerShell verification, Vercel deployment confirmation, and manual acceptance testing are pending.
+Final MVP bugfix - Removed the obsolete preview-only publish notice from plugin source. Rebuild/reinstall of the Obsidian plugin is required.
 
 ## Completed
 - Task 1 - Project foundation and Vercel baseline.
@@ -12,6 +12,7 @@ Task 8 - Final MVP polish and documentation implemented locally. Final push, nor
 - Task 6 - Plugin publish/create, update same URL, unpublish/delete, local metadata storage, URL copy, and page API CORS support.
 - Task 7 - Cleanup endpoint, protected cleanup secret check, expired page deletion, linked asset row deletion, Supabase Storage object deletion, temp asset URL matching, and daily Vercel Cron config.
 - Task 8 - Final plugin error message polish, README documentation, cost controls, known limitations, troubleshooting, and final acceptance checklist.
+- Final bugfix - Removed Task 3 preview-only publish notice helper so plugin source no longer contains `Backend publishing is not implemented yet.`
 
 ## Latest Verification
 - pnpm install --frozen-lockfile: blocked in Codex sandbox by Windows EPERM on @supabase/supabase-js
@@ -24,9 +25,11 @@ Task 8 - Final MVP polish and documentation implemented locally. Final push, nor
 - Git push from Codex: failed twice by timeout; local branch remains ahead of origin
 - Vercel deployment: pending final push/deployment confirmation
 - Manual Obsidian final acceptance test: required
+- Source search for old preview notice in `packages/obsidian-plugin/src` and tests: pass, no matches
 
 ## Blockers
 - Codex cannot verify the cleanup endpoint with the real `CLEANUP_SECRET` because the secret should remain private.
 - Codex sandbox cannot complete dependency install or build after Windows EPERM blocks @supabase/supabase-js in node_modules.
 - Codex could not push the final Task 8 commit because git push timed out twice on this machine.
 - Vercel production needs `CLEANUP_SECRET` configured and a redeploy before the protected cleanup endpoint can succeed.
+- The Obsidian app will keep showing the old notice until the plugin is rebuilt and the generated `main.js` is copied into the vault plugin folder.

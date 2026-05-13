@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   extractTitle,
-  formatPublishPreviewNotice,
   transformMarkdownAssets
 } from "../src/markdownTransform";
 
@@ -12,47 +11,6 @@ describe("extractTitle", () => {
 
   it("falls back when no H1 exists", () => {
     expect(extractTitle("Body", "fallback")).toBe("fallback");
-  });
-});
-
-describe("formatPublishPreviewNotice", () => {
-  it("shows asset and warning counts", () => {
-    expect(
-      formatPublishPreviewNotice("Image Test", {
-        assetPaths: ["image.png"],
-        warnings: []
-      })
-    ).toBe(
-      [
-        'Publish preview ready for "Image Test".',
-        "Local assets detected: 1.",
-        "Warnings: 0.",
-        "Backend publishing is not implemented yet."
-      ].join("\n")
-    );
-  });
-
-  it("shows the first warning message", () => {
-    expect(
-      formatPublishPreviewNotice("Image Test", {
-        assetPaths: ["missing.png"],
-        warnings: [
-          {
-            message: "Missing local image: missing.png",
-            path: "missing.png",
-            reason: "missing"
-          }
-        ]
-      })
-    ).toBe(
-      [
-        'Publish preview ready for "Image Test".',
-        "Local assets detected: 1.",
-        "Warnings: 1.",
-        "Missing local image: missing.png",
-        "Backend publishing is not implemented yet."
-      ].join("\n")
-    );
   });
 });
 
